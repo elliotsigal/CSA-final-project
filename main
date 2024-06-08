@@ -1,0 +1,104 @@
+import pygame
+import datetime
+from ultralytics import YOLO
+import cv2
+from No import No
+import os
+cap = cv2.VideoCapture(0)
+cap.set(3, 640)
+cap.set(4, 480)
+n = No(900,1000)
+model = YOLO("yolo-Weights/yolov8n.pt")
+classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
+           "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
+           "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
+           "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat",
+           "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup",
+           "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
+           "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed",
+           "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone",
+           "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
+           "teddy bear", "hair drier", "toothbrush"
+           ]
+period3Names = ["Mr.Holmer", "Skyla K", "Samuel P", "Fatiha Z", "Evelyn L", "Edward K", "Andreas W", "Saad Abdul S", "Jason M", "Lucy Z", "Brian M", "Elliot S",
+                "Jimmy Wu H", "Chloe G", "Eric A", "Kalliopi K", "Jimmy H", "Juan Z", "Terry L", "Kyle J", "Jonathan S", "Finn R", "Yeva K", "Ethan G", "Simon H", "Heather S",
+                "Annie C", "Zev T", "Roshni R", "Victor Li", "Thopicul H", "Justin S", "Alfred L"]
+number = os.getlogin()[7:9]
+student = period3Names[int(11)]
+code = 1234
+while True:
+ success, img = cap.read()
+ results = model(img, stream=True)
+
+ for r in results:
+     boxes = r.boxes
+     for box in boxes:
+         cls = int(box.cls[0])
+         now = datetime.datetime.now()
+         running = False
+         teach = False
+         if (now.hour == 13 and (0 <= now.minute and now.minute < 60 ) and classNames[cls] == "cell phone"):
+             pygame.init()
+             screen = pygame.display.set_mode((2000, 2000))
+             pygame.display.set_caption("Detector")
+             font = pygame.font.Font(None, 100)
+             color = (200, 200, 200)
+             intro = True
+             text = ''
+             rect = pygame.Rect(700, 1000, 600, 100)
+             text_box_color = (255, 255, 255)
+             text_box_border_color = (100, 100, 100)
+             width = 2
+             def draw_dots(text, surface, rect, color):
+                 dot_radius = 20
+                 dot_spacing = 40
+                 x, y = rect.x + dot_radius + 5, rect.y + rect.height // 2
+                 for char in text:
+                     if char != ' ':
+                         pygame.draw.circle(surface, color, (x, y), dot_radius)
+                     x += dot_spacing
+                     if x > rect.right - dot_radius - 5:
+                         break
+             while intro:
+                 pygame.mouse.set_visible(True)
+                 for event in pygame.event.get():
+                     if event.type == pygame.QUIT:
+                         running = False
+                     if event.type == pygame.MOUSEBUTTONUP:
+                         if n.rect.collidepoint(event.pos):
+                             intro = False
+                             running = True
+                 noti = student + " has left their phone"
+                 text_surface = font.render(noti, True, (255, 255, 255))
+                 background_color = (139, 0, 0)
+                 screen.fill(background_color)
+                 screen.blit(text_surface, (550, 800))
+                 screen.blit(n.image, n.rect)
+                 pygame.display.update()
+             while running:
+                 for event in pygame.event.get():
+                     if event.type == pygame.QUIT:
+                         running = False
+                     elif event.type == pygame.KEYDOWN:
+                         if event.key == pygame.K_BACKSPACE:
+                             text = text[:-1]
+                         elif event.key == pygame.K_RETURN:
+                             if int(text) == code:
+                                 pygame.quit()
+                             text = ""
+                         else:
+                             text += event.unicode
+                 screen.fill((139, 0, 0))
+                 instructions = "Mr.Holmer please input your password"
+                 instruction_surface = font.render(instructions, True, (255, 255, 255))
+                 screen.blit(instruction_surface, (500, 700))
+                 pygame.draw.rect(screen, text_box_border_color, rect, width)
+                 pygame.draw.rect(screen, text_box_color,rect.inflate(-width * 2, -width * 2))
+
+                 draw_dots(text, screen, rect, (0,0,0))
+                 pygame.display.flip()
+ if cv2.waitKey(1) == ord('q'):
+     break
+
+cap.release()
+cv2.destroyAllWindows()

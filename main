@@ -4,6 +4,20 @@ from ultralytics import YOLO
 import cv2
 from No import No
 import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+sender = "phonetrackerbths@outlook.com"
+password = "Bthsphonetracker"
+subject = "Your phone has been lost"
+body = "Your phone was last detected after the period 3 ended in 2n1"
+message = MIMEMultipart()
+message["From"] = sender
+message["Subject"] = subject
+message.attach(MIMEText(body, "plain"))
+smtp_server = "smtp.outlook.com"
+smtp_port = 587
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
 cap.set(4, 480)
@@ -25,6 +39,9 @@ period3Names = ["Mr.Holmer", "Skyla K", "Samuel P", "Fatiha Z", "Evelyn L", "Edw
                 "Annie C", "Zev T", "Roshni R", "Victor Li", "Thopicul H", "Justin S", "Alfred L"]
 number = os.getlogin()[7:9]
 student = period3Names[int(11)]
+if student == "Elliot S":
+    receiver = "elliots32@nycstudents.net"
+    message["To"] = receiver
 code = 1234
 while True:
  success, img = cap.read()
@@ -37,7 +54,16 @@ while True:
          now = datetime.datetime.now()
          running = False
          teach = False
-         if (now.hour == 13 and (0 <= now.minute and now.minute < 60 ) and classNames[cls] == "cell phone"):
+         if (now.hour == 9 and (0 <= now.minute and now.minute < 60 ) and classNames[cls] == "cell phone"):
+             try:
+                 server = smtplib.SMTP(smtp_server, smtp_port)
+                 server.starttls()
+                 server.login(sender, password)
+                 server.sendmail(sender, receiver, message.as_string())
+             except Exception as e:
+                 print(f"Error: {e}")
+             finally:
+                 server.quit()
              pygame.init()
              screen = pygame.display.set_mode((2000, 2000))
              pygame.display.set_caption("Detector")

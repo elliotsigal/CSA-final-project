@@ -7,10 +7,13 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+import os.path
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
 cap.set(4, 480)
-n = No(900,1000)
+n = No(950,1000)
 model = YOLO("yolo-Weights/yolov8n.pt")
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
            "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
@@ -34,12 +37,22 @@ def email_student():
     password = "prugpxjwamcyfpqw"
     subject = "Your phone has been lost"
     body = "Your phone was last detected after the period 3 ended in 2n1"
+    file_location = "C:\\Users\\ellio\\PyCharmProjects\\pythonProject3\\phone.jpg"
     message = MIMEMultipart()
     message["From"] = sender
     message["Subject"] = subject
     message.attach(MIMEText(body, "plain"))
+    file = os.path.basename(file_location)
+    attach = open(file_location,"rb")
+    part = MIMEBase("application", "octet-stream")
+    part.set_payload((attach).read())
+    encoders.encode_base64(part)
+    part.add_header("Content-Disposition", "attachment; filename= %s" % file)
+    message.attach(part)
+
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
+
     if student == "Elliot S":
         receiver = "elliots32@nycstudents.net"
         message["To"] = receiver
@@ -85,7 +98,8 @@ while True:
          now = datetime.datetime.now()
          running = False
          teach = False
-         if (now.hour == 19 and (0 <= now.minute and now.minute < 60 ) and classNames[cls] == "cell phone"):
+         if (now.hour == 20 and (0 <= now.minute and now.minute < 60 ) and classNames[cls] == "cell phone"):
+             cv2.imwrite("phone.jpg",img)
              email_student()
              pygame.init()
              screen = pygame.display.set_mode((2000, 2000))
@@ -141,7 +155,7 @@ while True:
                  screen.fill((139, 0, 0))
                  instructions = "Mr.Holmer please input your password"
                  instruction_surface = font.render(instructions, True, (255, 255, 255))
-                 screen.blit(instruction_surface, (500, 700))
+                 screen.blit(instruction_surface, (350, 750))
                  pygame.draw.rect(screen, text_box_border_color, rect, width)
                  pygame.draw.rect(screen, text_box_color,rect.inflate(-width * 2, -width * 2))
 
@@ -152,3 +166,5 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+

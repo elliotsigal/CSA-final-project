@@ -70,10 +70,18 @@ def email_laf():
     password = "prugpxjwamcyfpqw"
     subject = "A phone has been lost"
     body = "A phone has been reported to be lost and is located in 2n1 lost and found box"
+    file_location = "C:\\Users\\ellio\\PyCharmProjects\\pythonProject3\\phone.jpg"
     message = MIMEMultipart()
     message["From"] = sender
     message["Subject"] = subject
     message.attach(MIMEText(body, "plain"))
+    file = os.path.basename(file_location)
+    attach = open(file_location, "rb")
+    part = MIMEBase("application", "octet-stream")
+    part.set_payload((attach).read())
+    encoders.encode_base64(part)
+    part.add_header("Content-Disposition", "attachment; filename= %s" % file)
+    message.attach(part)
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
     receiver = "elliotsigal2007@gmail.com"
@@ -98,7 +106,7 @@ while True:
          now = datetime.datetime.now()
          running = False
          teach = False
-         if (now.hour == 20 and (0 <= now.minute and now.minute < 60 ) and classNames[cls] == "cell phone"):
+         if (now.hour == 10 and (0 <= now.minute and now.minute < 60 ) and classNames[cls] == "cell phone"):
              cv2.imwrite("phone.jpg",img)
              email_student()
              pygame.init()
@@ -166,5 +174,8 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+
+
 
 
